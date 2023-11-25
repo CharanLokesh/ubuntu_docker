@@ -1,0 +1,51 @@
+pipeline {
+    agent any
+
+    environment {
+        // Define your environment variables
+        AWS_DEFAULT_REGION = 'ap-south-1'
+        AWS_ACCESS_KEY_ID = credentials('AKIAWH3INUIOI7DBO7PX')
+        AWS_SECRET_ACCESS_KEY = credentials('fXZoeIGSH9M1FjnA679IvJQLncQaXyGN/0JjwDIw')
+        ECR_REGISTRY_URL = 'public.ecr.aws/w5i1f6f4/charan'
+        DOCKER_IMAGE_NAME = 'ubuntu_base_22'
+        DOCKERFILE_PATH = 'ubuntu_docker/dockerfile'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout your source code from the version control system
+                checkout scm
+            }
+        }
+
+        stage('Build and Push to ECR') {
+            steps {
+                script {
+                    // Authenticate with AWS ECR
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY', credentialsId: 'your-aws-credentials-id']]) {
+                        sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY_URL}"
+                    }
+
+                    // Build Docker image
+                    sh "docker build -t ${DOCKER_IMAGE_NAME} -f ${DOCKERFILE_PATH} ."
+
+                    // Tag Docker image for ECR
+                    sh "docker tag ${DOCKER_IMAGE_NAME}:latest ${ECR_REGISTRY_URL}/${DOCKER_IMAGE_NAME}:latest"
+
+                    // Push Docker image to ECR
+                    sh "docker push ${ECR_REGISTRY_URL}/${DOCKER_IMAGE_NAME}:latest"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Docker image build and push to ECR succeeded.'
+        }
+        failure {
+            echo 'Docker image build or push to ECR failed.'
+        }
+    }
+}
