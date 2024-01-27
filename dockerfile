@@ -3,11 +3,9 @@ FROM ubuntu:22.04
 
 LABEL MAINTAINER "Constantine Vlahos <cvlahos@smarttech.com>"
 
-
 # Set noninteractive installation  
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/Edmonton  
-
 
 # Build a ubuntu 20.04 base image
 # Update package lists, install packages, and clean up
