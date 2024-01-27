@@ -1,6 +1,5 @@
 pipeline {
     agent any
-
     environment {
         // Define your environment variables
         AWS_DEFAULT_REGION = 'ap-south-1'
