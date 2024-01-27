@@ -1,6 +1,8 @@
 #!/bin/bash
 
+
 set -e
+
 
 case $OSTYPE in
   *linux*)
